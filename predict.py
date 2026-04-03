@@ -106,7 +106,7 @@ def get_candidate_pairs(structure, mode='full_scan', is_alphafold=False):
             })
             seq_idx += 1
 
-    print(f"  The number of protein residues: {len(residues)}")
+    print(f"The number of protein residues: {len(residues)}")
 
     if mode == 'cys_only':
         candidates = [r for r in residues if r['res_name'] == 'CYS']
