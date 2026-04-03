@@ -246,8 +246,8 @@ def format_results(pairs, zs_scores, probs, top_n=20, output_file=None):
         need_mut1 = '' if p['res1_name'] == 'CYS' else '→Cys'
         need_mut2 = '' if p['res2_name'] == 'CYS' else '→Cys'
         rows.append({
-            'Rank': 0,
-            'Residue 1': f"{p['chain1']}{p['res1_id']}({p['res1_name']}{need_mut1})",
+            'Ranking': 0,
+            'Residue1': f"{p['chain1']}{p['res1_id']}({p['res1_name']}{need_mut1})",
             'Residue2': f"{p['chain2']}{p['res2_id']}({p['res2_name']}{need_mut2})",
             'P(SS_bond)': round(float(prob), 4),
             'CA_distance(Å)': round(p['ca_dist'], 2),
@@ -256,7 +256,7 @@ def format_results(pairs, zs_scores, probs, top_n=20, output_file=None):
             'ZS_coev': round(z['zs_coev'], 3),
             'Flexibility1': round(p['flex1'], 1) if p['flex1'] else 'N/A',
             'Flexibility2': round(p['flex2'], 1) if p['flex2'] else 'N/A',
-            'Recommendation Level': grade,
+            'Recommendation_Level': grade,
         })
     df = pd.DataFrame(rows)
     df = df.sort_values('P(SS_bond)', ascending=False).reset_index(drop=True)
@@ -265,7 +265,8 @@ def format_results(pairs, zs_scores, probs, top_n=20, output_file=None):
     print(f"\n{'='*70}")
     print(f"Prediction results Top-{top_n}")
     print(f"{'='*70}")
-    display_cols = ['Ranking', 'Residue1', 'Residue2', 'P(SS_bond)', 'CA_distance(Å)', 'ZS_joint', 'Recommendation Level']
+    display_cols = ['Ranking', 'Residue1', 'Residue2', 'P(SS_bond)',
+                    'CA_distance(Å)', 'ZS_joint', 'Recommendation_Level']
     print(df[display_cols].head(top_n).to_string(index=False))
 
     print(f"\nStatistics:")
@@ -276,10 +277,9 @@ def format_results(pairs, zs_scores, probs, top_n=20, output_file=None):
 
     if output_file:
         df.to_csv(output_file, index=False, encoding='utf-8-sig')
-        print(f"\nThe result has been saved.: {output_file}")
+        print(f"\nThe result has been saved: {output_file}")
     return df
-
-
+    
 def main():
     ap = argparse.ArgumentParser(description='EvoSSBond: Prediction of engineered disulfide bond sites in proteins')
     
