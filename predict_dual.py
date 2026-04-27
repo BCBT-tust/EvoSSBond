@@ -1,43 +1,5 @@
 """
 EvoSSBond Dual-Model Diagnostic (standalone)
-=============================================
-
-目的：
-    对同一蛋白结构 + 同一组候选位点 + 同一组 ZS 分数，
-    分别用 m1 (45D) 和 m2 (49D) 跑预测，对比排名。
-    用于诊断 m2 是否依赖"残基本身是否为 Cys"这一捷径特征。
-
-特点：
-    - 完全独立，不 import 任何 step5_predict 或本地模块
-    - 默认使用 m1_xgb_45dim_v2.pkl 与 m2_xgb_49dim_v2.pkl
-
-用法（在 SSbond 目录下）：
-    # BglD（AlphaFold 结构）
-    python step5_diagnostic.py bglD.pdb results/models \\
-        --alphafold \\
-        --output_prefix results/diag_bglD \\
-        --target_pairs "666:680"
-
-    # XynII 野生型（晶体结构 5ZH0）
-    python step5_diagnostic.py 5ZH0.cif results/models \\
-        --output_prefix results/diag_xynII_wt \\
-        --target_pairs "2:28,2:26"
-
-    # XynII 突变型（晶体结构 8KEU，N 端少 1 个残基）
-    python step5_diagnostic.py 8KEU.cif results/models \\
-        --output_prefix results/diag_xynII_mut \\
-        --target_pairs "1:27"
-
-    # MFAps（注意编号系统）
-    python step5_diagnostic.py MFAps.cif results/models \\
-        --alphafold \\
-        --output_prefix results/diag_mfaps \\
-        --target_pairs "211:214,409:412"
-
-    # PETase
-    python step5_diagnostic.py BbPETasecd.pdb results/models \\
-        --output_prefix results/diag_petase \\
-        --target_pairs "364:418,207:280"
 """
 
 import numpy as np
@@ -49,11 +11,6 @@ warnings.filterwarnings('ignore')
 
 from Bio.PDB import PDBParser, MMCIFParser
 from Bio.PDB.Polypeptide import is_aa
-
-
-# ────────────────────────────────────────────────────────
-# 与 step5_predict.py 完全一致的几何处理（直接内嵌，避免 import）
-# ────────────────────────────────────────────────────────
 
 BACKBONE_ATOMS = ['N', 'CA', 'C', 'O', 'CB']
 CA_DIST_MIN = 3.0
@@ -397,7 +354,7 @@ def diagnostic_summary(df_m1, df_m2, target_pairs, structure_name):
 def main():
     ap = argparse.ArgumentParser(description='EvoSSBond 双模型诊断脚本')
     ap.add_argument('structure', help='输入结构文件 (.pdb 或 .cif)')
-    ap.add_argument('model_dir', help='模型目录（含 m1_xgb_45dim_v2.pkl 和 m2_xgb_49dim_v2.pkl）')
+    ap.add_argument('model_dir', help='模型目录（含 m1_xgb_45dim.pkl 和 m2_xgb_49dim.pkl）')
     ap.add_argument('--alphafold', action='store_true',
                     help='输入为 AlphaFold 结构（B 因子列为 pLDDT）')
     ap.add_argument('--mode', default='full_scan', choices=['full_scan', 'cys_only'])
@@ -405,8 +362,8 @@ def main():
     ap.add_argument('--target_pairs', default=None,
                     help='要追踪的残基对，格式 "666:680,2:28"')
     ap.add_argument('--esm_model', default='esm2_t33_650M_UR50D')
-    ap.add_argument('--m1_name', default='m1_xgb_45dim_v2.pkl')
-    ap.add_argument('--m2_name', default='m2_xgb_49dim_v2.pkl')
+    ap.add_argument('--m1_name', default='m1_xgb_45dim.pkl')
+    ap.add_argument('--m2_name', default='m2_xgb_49dim.pkl')
     args = ap.parse_args()
 
     structure_path = Path(args.structure)
@@ -457,7 +414,6 @@ def main():
     print(f"\n保存: {prefix}_m1_predictions.csv  ({len(df_m1)} 对)")
     print(f"保存: {prefix}_m2_predictions.csv  ({len(df_m2)} 对)")
 
-    # 拼接对比表
     import pandas as pd
     df_compare = df_m1[['Rank', 'res1_key', 'res2_key', 'res1_name', 'res2_name',
                         'P', 'CB_distance', 'ZS_joint', 'is_native_pair']].copy()
